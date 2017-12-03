@@ -10,16 +10,16 @@ class NeuralNetworkClassifier():
     def __init__(self,i_feat, li_layers=[1024,64,8,1], loss='mean_squared_error', optimizer = 'adam'):
         self.i_feat = i_feat
         self.li_layers = li_layers if len(li_layers)>1 else [3,1]
-        
+
         for i in range(len(self.li_layers)):
             if i == 0:
                 self.o_neuralnet.add(Dense(self.li_layers[i], activation = 'relu', input_dim=self.i_feat))
-                self.O_neuralnet.add(Dropout(.08))
+                self.O_neuralnet.add(Dropout(.3))
             elif i == len(self.li_layers)-1:
                 self.o_neuralnet.add(Dense(self.li_layers[i], activation = 'sigmoid'))
             else:
                 self.o_neuralnet.add(Dense(self.li_layers[i], activation = 'relu'))
-                self.O_neuralnet.add(Dropout(.05))
+                self.O_neuralnet.add(Dropout(.2))
         self.o_neuralnet.compile(optimizer = optimizer,
                         loss= loss)
 
