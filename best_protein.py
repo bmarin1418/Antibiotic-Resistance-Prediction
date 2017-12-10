@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # returns the best protein to use as input to the neural net
     # example call: python best_protein 1400870.3, ofloxacin
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-        print("usage: python best_protein.py genome_id biotic_name")
-        print("example call: python best_protein.py 1400870.3 ofloxacin")
-    elif len(sys.argv) == 3:
-        print(best_protein(sys.argv[1], sys.argv[2], verbose))
+        print("usage: python best_protein.py genome_id biotic_name print_bool")
+        print("example call: python best_protein.py 1400870.3 ofloxacin 1")
+    elif len(sys.argv) == 4:
+        print(best_protein(sys.argv[1], sys.argv[2], sys.argv[3]))
