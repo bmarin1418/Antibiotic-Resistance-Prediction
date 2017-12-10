@@ -1,27 +1,53 @@
-from collections import defaultdict
 import ftplib
-import os
+import os, sys
 
-def best_protein(genome_id, biotic):
-    file_nm = genome_id + '.PATRIC.ffn'
-    if no os.pat.isfile('./sequences/' + file_nm):
+'''
+function: best_protein
+input: id number of genome, name of biotic, print flag
+output: the best protein sequence to feed into our neural network
+'''
+def best_protein(genome_id, biotic, do_print):
+    file_nm = genome_id + ".PATRIC.ffn"
+    if not os.path.isfile('./sequences/' + file_nm):
+        print("file not found downloading...") if do_print else lambda:None
         conn = ftplib.FTP('ftp.patricbrc.org')
         conn.login()
+        print("logged in...") if do_print else lambda:None
         conn.cwd('/patric2/genomes/' + genome_id + '/')
-        conn.retribinary('RETR ' + file_nm, open('./sequences/' + file_nm, 'wb').write)
+        print("downloading...") if do_print else lambda:None
+        conn.retrbinary('RETR ' + file_nm, open('./sequences/' + file_nm, 'wb').write)
         conn.quit()
+        print("downloaded...") if do_print else lambda:None
+    else:
+        print("file found...") if do_print else lambda:None
 
-    file_name = "./sequences/" + genome_id
+    file_name = "./sequences/" + file_nm
+    file_string = ""
     f = open(file_name, "r")
-    temp_split = f.split(">")
+    for line in f:
+        file_string += (line)
+    temp_split = file_string.split(">")
     found_biotic = False
     first_match = ""
     second_match = ""
+    print("searching for best protein...")
     for sub_seq in temp_split:
-        if biotic.lower() in temp_split.split("]")[0].lower():
-            first_match += temp_split.split("]")[1].rstrip()
-        if "antibiotic" in temp_split.split("]")[0].lower():
-            second_match += temp_split.split("]")[1].rstrip()
+        if biotic.lower() in sub_seq.split("]")[0].lower():
+            if do_print:
+                print("found specific antibiotic sequence!")
+                print("\ntitle: \n")
+                print(sub_seq.split("]")[0].rstrip())
+                print("\nprotein: ")
+            #first_match += temp_split.split("]")[1].rstrip()
+            return sub_seq.split("]")[1].rstrip()
+        if "antibiotic" in sub_seq.split("]")[0].lower():
+            if do_print:
+                print("found generic antibiotic sequence!")
+                print("title: ")
+                print(sub_seq.split("]")[0].rstrip())
+                print("protein: ")
+            #second_match += temp_split.split("]")[1].rstrip()
+            return sub_seq.split("]")[1].rstrip()
 
     if first_match:
         return first_match
@@ -30,4 +56,11 @@ def best_protein(genome_id, biotic):
 
 
 if __name__ == "__main__":
-    best_protein(argv[1], argv[2])
+    # pass genome_id, biotic name to best_protein function
+    # returns the best protein to use as input to the neural net
+    # example call: python best_protein 1400870.3, ofloxacin
+    if sys.argv[1] == "-h" or sys.argv[1] == "--help":
+        print("usage: python best_protein.py genome_id biotic_name")
+        print("example call: python best_protein.py 1400870.3 ofloxacin")
+    elif len(sys.argv) == 3:
+        print(best_protein(sys.argv[1], sys.argv[2], verbose))
