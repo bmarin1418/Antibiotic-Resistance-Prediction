@@ -28,8 +28,9 @@ def best_protein(genome_id, biotic, do_print):
         file_string += (line)
     temp_split = file_string.split(">")
     found_biotic = False
-    first_match = ""
-    second_match = ""
+    #first_match = ""
+    #second_match = ""
+    match = ""
     print("searching for best protein...")
     for sub_seq in temp_split:
         if biotic.lower() in sub_seq.split("]")[0].lower():
@@ -39,7 +40,8 @@ def best_protein(genome_id, biotic, do_print):
                 print(sub_seq.split("]")[0].rstrip())
                 print("\nprotein: ")
             #first_match += temp_split.split("]")[1].rstrip()
-            return sub_seq.split("]")[1].rstrip()
+            #return sub_seq.split("]")[1].rstrip()
+            match += sub_seq.split("]")[1].rstrip()
         if "antibiotic" in sub_seq.split("]")[0].lower():
             if do_print:
                 print("found generic antibiotic sequence!")
@@ -47,12 +49,14 @@ def best_protein(genome_id, biotic, do_print):
                 print(sub_seq.split("]")[0].rstrip())
                 print("protein: ")
             #second_match += temp_split.split("]")[1].rstrip()
-            return sub_seq.split("]")[1].rstrip()
+            #return sub_seq.split("]")[1].rstrip()
+            match += sub_seq.split("]")[1].rstrip()
 
-    if first_match:
-        return first_match
-    else:
-        return second_match
+    return match
+    #if first_match:
+    #    return first_match
+    #else:
+    #    return second_match
 
 
 if __name__ == "__main__":
