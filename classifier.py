@@ -21,7 +21,7 @@ print('The number of kmers is {}'.format(len(kmer_cnts)))
 num_map = {}
 num = 0
 for k_id in kmer_cnts:
-    num_map[kmer_cnts] = num
+    num_map[k_id] = num
 
 def createMatrix(mat, genome_files):
     for row_i, file_nm in enumerate(genome_files):
