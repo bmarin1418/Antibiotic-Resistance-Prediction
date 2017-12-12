@@ -6,10 +6,13 @@ import random
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report
 
 # Get the feature space dimension so we can initialize the data matrix
+
 kmer_cnts = collections.defaultdict(lambda:0)
 genome_files = [file_nm for file_nm in os.listdir('./pen_cnts')]
+
 for file_nm in genome_files:
     with open('./pen_cnts/' + file_nm, 'r') as fd:
         kmer_ids = set(fd.readlines()[0].rstrip().split(' '))
@@ -39,29 +42,46 @@ def createLabels(labels, genome_files):
              labels[row_i, 0] = 1
     return labels
 
-train_matrix = np.zeros([100, len(kmer_cnts)], dtype=np.int8)
-test_matrix = np.zeros([50, len(kmer_cnts)], dtype=np.int8) 
+train_matrix = np.zeros([220, len(kmer_cnts)], dtype=np.int8)
+test_matrix = np.zeros([80, len(kmer_cnts)], dtype=np.int8) 
 print('matrices malloced')
-train_labels = np.zeros([100,1])
-test_labels = np.zeros([50, 1])
+train_labels = np.zeros([220,1])
+test_labels = np.zeros([80, 1])
 
 random.shuffle(genome_files)
-train_files = genome_files[:100]
-test_files = genome_files[100:150]
+train_files = genome_files[:220]
+test_files = genome_files[220:]
 
 truth_dat = pd.read_csv("PATRIC_genomes_AMR.tsv", sep='\t', dtype=str)
 truth_dat = truth_dat[truth_dat['antibiotic'] == 'penicillin']
 
 train_matrix = createMatrix(train_matrix, train_files)
+print('train matrix filled')
 test_matrix = createMatrix(test_matrix, test_files)
+print('test matrix filled')
 train_labels = createLabels(train_labels, train_files)
 test_labels = createLabels(test_labels, test_files)
 
+def calcAccuracy(pred, labels):
+    correct = 0
+    for i, pred in enumerate(preds):
+        if pred == labels[i]:
+            correct += 1
+    return float(correct) / len(preds)
 
-clf = RandomForestClassifier(n_jobs=36, max_features="sqrt", n_estimators=50)
-print('training started')
-clf.fit(train_matrix, np.ravel(train_labels))
-preds = clf.predict(test_matrix)
-print('training finished')
-np.save('preds', preds)
-np.save('labels', np.ravel(test_labels))
+for n_estimator in range(100, 1000, 500):
+    clf = RandomForestClassifier(n_jobs=36, max_features="sqrt", n_estimators=n_estimator)
+    clf.fit(train_matrix, np.ravel(train_labels))
+    preds = clf.predict(test_matrix)
+    print("RF with {} estimators, accuracy: {}".format(n_estimator, calcAccuracy(preds, np.ravel(test_labels))))
+    print(classification_report(np.ravel(test_labels), preds))
+
+for n_estimator in range(1000, 11000, 1000):
+    clf = AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, max_features="sqrt"), 
+            algorithm="SAMME",
+             n_estimators=n_estimator)
+    clf.fit(train_matrix, np.ravel(train_labels))
+    preds = clf.predict(test_matrix)
+    print("Adaboost with {} estimators, accuracy: {}".format(n_estimator, calcAccuracy(preds, np.ravel(test_labels))))
+    print(classification_report(np.ravel(test_labels), preds))
+
